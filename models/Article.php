@@ -65,19 +65,27 @@ class Article extends \yii\db\ActiveRecord
         ];
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getArticleTags()
+    public function saveImage($fileName)
     {
-        return $this->hasMany(ArticleTag::className(), ['article_id' => 'id']);
+        $this->image = $fileName;
+        return $this->save(false);
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getComments()
+    public function deleteImage()
     {
-        return $this->hasMany(Comment::className(), ['article_id' => 'id']);
+        $modelUploadImage = new ImageUpload();
+        $modelUploadImage->deleteUploadFile($this->image);
     }
+
+    public function getImage()
+    {
+        return ($this->image)? '/uploads/' . $this->image : '/uploads/no-image.png';
+    }
+
+    public  function  beforeDelete()
+    {
+        $this->deleteImage();
+        return parent::beforeDelete();
+    }
+
 }
