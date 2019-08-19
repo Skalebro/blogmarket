@@ -3,7 +3,6 @@
 namespace app\models;
 
 use Yii;
-
 /**
  * This is the model class for table "article".
  *
@@ -65,6 +64,11 @@ class Article extends \yii\db\ActiveRecord
         ];
     }
 
+    public function getCategory()
+    {
+        return $this->hasOne(Category::className(), ['id' => 'category_id']);
+    }
+
     public function saveImage($fileName)
     {
         $this->image = $fileName;
@@ -86,6 +90,14 @@ class Article extends \yii\db\ActiveRecord
     {
         $this->deleteImage();
         return parent::beforeDelete();
+    }
+
+    public function  saveCategory($category_id){
+        $category = Category::findOne($category_id);
+        if(!is_null($category_id)){
+            $this->link('category', $category);
+            return true;
+        }
     }
 
 }

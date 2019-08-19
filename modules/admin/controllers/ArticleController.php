@@ -2,10 +2,12 @@
 
 namespace app\modules\admin\controllers;
 
+use app\models\Category;
 use app\models\ImageUpload;
 use Yii;
 use app\models\Article;
 use app\models\ArticleSearch;
+use yii\helpers\VarDumper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -126,6 +128,13 @@ class ArticleController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
+    /**
+     * Set Image existing Article model.
+     * If upload image is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id
+     * @return mixed
+     * @throws NotFoundHttpException if the model cannot be found
+     */
     public function actionSetImage($id)
     {
         $model = new ImageUpload();
@@ -138,5 +147,34 @@ class ArticleController extends Controller
             }
         }
         return $this->render('image', ['model' => $model]);
+    }
+
+    /**
+     * Set category an existing Article model.
+     * If set category is successful, the browser will be redirected to the 'view' page.
+     * @param integer $id
+     * @return mixed
+     * @throws NotFoundHttpException if the model cannot be found
+     */
+    public function actionSetCategory($id)
+    {
+        $article = $this->findModel($id);
+        $selectedCategory = ($article->category) ? $article->category->id : 0;
+        $categories = Category::find()->all();
+
+        if(Yii::$app->request->isPost){
+            $category = Yii::$app->request->post('category');
+            if($article->saveCategory($category)){
+                return $this->redirect(['view', 'id' => $article->id]);
+            }
+        }
+
+        return$this->render('category',
+            [
+                'article' => $article,
+                'selectedCategory' => $selectedCategory,
+                'categories' => $categories,
+            ]
+        );
     }
 }
