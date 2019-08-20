@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\helpers\ArrayHelper;
+
 /**
  * This is the model class for table "article".
  *
@@ -69,6 +71,12 @@ class Article extends \yii\db\ActiveRecord
         return $this->hasOne(Category::className(), ['id' => 'category_id']);
     }
 
+    public function getTags()
+    {
+        return $this->hasMany(Tag::className(), ['id' => 'tag_id'])
+            ->viaTable('article_tag', ['article_id' => 'id']);
+    }
+
     public function saveImage($fileName)
     {
         $this->image = $fileName;
@@ -92,11 +100,30 @@ class Article extends \yii\db\ActiveRecord
         return parent::beforeDelete();
     }
 
-    public function  saveCategory($category_id){
+    public function  saveCategory($category_id)
+    {
         $category = Category::findOne($category_id);
         if(!is_null($category_id)){
             $this->link('category', $category);
             return true;
+        }
+    }
+
+    public function getSelectedTags()
+    {
+        $selectedIds = $this->getTags()->select('id')->asArray()->all();
+        $selectedTags = ArrayHelper::getColumn($selectedIds, 'id');
+        return $selectedTags;
+    }
+
+    public function saveTags($tags)
+    {
+        if(is_array($tags)){
+            ArticleTag::deleteAll(['article_id'] == $this->id);
+            foreach($tags as $tag_id){
+                $tag = Tag::findOne($tag_id);
+                $this->link('tags', $tag);
+            }
         }
     }
 

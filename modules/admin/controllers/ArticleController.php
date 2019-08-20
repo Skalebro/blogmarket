@@ -4,9 +4,11 @@ namespace app\modules\admin\controllers;
 
 use app\models\Category;
 use app\models\ImageUpload;
+use app\models\Tag;
 use Yii;
 use app\models\Article;
 use app\models\ArticleSearch;
+use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -174,6 +176,27 @@ class ArticleController extends Controller
                 'article' => $article,
                 'selectedCategory' => $selectedCategory,
                 'categories' => $categories,
+            ]
+        );
+    }
+
+    public function actionSetTags($id)
+    {
+        $article = $this->findModel($id);
+        $tags = ArrayHelper::map(Tag::find()->all(), 'id', 'title');
+        $selectTags = $article->getSelectedTags();
+
+        if(Yii::$app->request->isPost){
+            $tags = Yii::$app->request->post('tags');
+            $article->saveTags($tags);
+            $this->redirect(['view', 'id' => $article->id]);
+        }
+
+        return$this->render('tags',
+            [
+                'article' => $article,
+                'tags' => $tags,
+                'selectTags' => $selectTags,
             ]
         );
     }
